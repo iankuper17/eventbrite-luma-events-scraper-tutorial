@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eventbrite &amp; Luma Events Scraper: export events to CSV</title>
+  <meta name="description" content="Scrape Eventbrite events and Luma (lu.ma) events by city, keyword, category, or URL. One normalized schema with timezone, venue, organizer, and ticket prices. From $1.20 per 1,000 events on Apify.">
+  <link rel="canonical" href="https://iankuper17.github.io/eventbrite-luma-events-scraper-tutorial/">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#0f1c2e">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Eventbrite &amp; Luma Events Scraper: export events to CSV">
+  <meta property="og:description" content="Search public Eventbrite and Luma events in one run. Filter by city, keyword, category, or URL, then export to CSV, JSON, or Excel. On Apify Store.">
+  <meta property="og:url" content="https://iankuper17.github.io/eventbrite-luma-events-scraper-tutorial/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Eventbrite &amp; Luma Events Scraper on Apify">
+  <meta name="twitter:description" content="Scrape Eventbrite events and Luma (lu.ma) events into one schema. From $1.20 per 1,000 events.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Eventbrite & Luma Events Scraper",
+    "alternateName": "Events API",
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "Events data API",
+    "operatingSystem": "Web",
+    "url": "https://apify.com/hiringdata/eventbrite-luma-events-scraper",
+    "downloadUrl": "https://apify.com/hiringdata/eventbrite-luma-events-scraper",
+    "codeRepository": "https://iankuper17.github.io/eventbrite-luma-events-scraper-tutorial/",
+    "description": "Scrape public events from Eventbrite and Luma (lu.ma) by city, keyword, category and date range, or from event, organizer and calendar URLs. One clean schema: start/end with timezone, venue, address, coordinates, organizer, ticket prices, online flag.",
+    "author": {
+      "@type": "Organization",
+      "name": "hiringdata",
+      "url": "https://apify.com/hiringdata"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "USD",
+      "lowPrice": "1.20",
+      "highPrice": "2.00",
+      "offerCount": 4,
+      "description": "Pay-per-event pricing per 1,000 event results saved to the dataset: $2.00 on the Apify Free plan, $1.70 Bronze, $1.40 Silver, and $1.20 on Gold and above. Plus a $0.00005 actor-start fee per run. Duplicates, filtered-out, and already-seen events are not charged."
+    },
+    "featureList": [
+      "Eventbrite and Luma (lu.ma) in one run",
+      "Search by city, keyword, category, and date range, or paste event, organizer, and calendar URLs",
+      "Normalized output with timezone, venue, coordinates, organizer, and ticket prices",
+      "Export to CSV, JSON, or Excel",
+      "Filters and new-events monitoring",
+      "Public event pages and public JSON; no login required"
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --bg-card: #fffdf9;
+      --ink: #142033;
+      --muted: #5c6573;
+      --line: #d9d2c7;
+      --accent: #0f6e56;
+      --accent-ink: #f4fff9;
+      --accent-hover: #0b5945;
+      --chip: #e8efe9;
+      --code: #0f1c2e;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #e7efe8 0%, transparent 55%),
+        var(--bg);
+      line-height: 1.6;
+    }
+    a { color: var(--accent); }
+    a:hover { color: var(--accent-hover); }
+    header, main, footer { width: min(1080px, calc(100% - 2rem)); margin-inline: auto; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.15rem 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: inherit;
+      text-decoration: none;
+    }
+    .logo {
+      width: 2rem;
+      height: 2rem;
+      border-radius: .55rem;
+      background: var(--ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: .85rem;
+    }
+    nav { display: flex; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: var(--muted); text-decoration: none; font-size: .95rem; }
+    nav a:hover { color: var(--ink); }
+    .hero { padding: 2.2rem 0 2.8rem; }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.15rem);
+      line-height: 1.12;
+      letter-spacing: -.035em;
+      margin: 0 0 .9rem;
+    }
+    .lede { font-size: 1.15rem; color: var(--muted); max-width: 42rem; margin: 0 0 1.5rem; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: .75rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: .8rem 1.2rem;
+      font-weight: 650;
+    }
+    .btn-primary { background: var(--accent); color: var(--accent-ink); }
+    .btn-primary:hover { background: var(--accent-hover); color: var(--accent-ink); }
+    .btn-secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+    .btn-secondary:hover { background: #fff; color: var(--ink); }
+    .chips { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1.4rem; }
+    .chip {
+      background: var(--chip);
+      border: 1px solid #d4e0d7;
+      color: #204536;
+      border-radius: 999px;
+      padding: .25rem .7rem;
+      font-size: .85rem;
+      font-weight: 600;
+    }
+    section { padding: 0 0 2.6rem; }
+    h2 { font-size: 1.45rem; letter-spacing: -.02em; margin: 0 0 .9rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: .9rem;
+    }
+    article, .card, pre, table {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    article, .card { padding: 1rem 1.1rem; }
+    article h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    article p, .card p { margin: 0; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; }
+    th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 700; }
+    tr:last-child td { border-bottom: 0; }
+    .price { font-variant-numeric: tabular-nums; font-weight: 650; }
+    pre {
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      font-size: .82rem;
+      line-height: 1.45;
+      color: #e8eef6;
+      background: var(--code);
+      border-color: #0f1c2e;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    p code, td code, li code {
+      font-size: .86em;
+      background: #efe9df;
+      padding: .1em .35em;
+      border-radius: 5px;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .note { color: var(--muted); font-size: .95rem; }
+    .fine { color: var(--muted); font-size: .88rem; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 1.4rem 0 2.2rem;
+      color: var(--muted);
+      font-size: .92rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem 1.2rem;
+      justify-content: space-between;
+    }
+    @media (max-width: 640px) {
+      nav { display: none; }
+      th:nth-child(3), td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="https://apify.com/hiringdata/eventbrite-luma-events-scraper">
+      <span class="logo" aria-hidden="true">EV</span>
+      Eventbrite &amp; Luma Scraper
+    </a>
+    <nav aria-label="Page">
+      <a href="#use-cases">Use cases</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#output">Output</a>
+      <a href="https://github.com/iankuper17/eventbrite-luma-events-scraper-tutorial">Tutorial</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Scrape Eventbrite events and Luma events, one clean schema.</h1>
+      <p class="lede">Search public Eventbrite and Luma (lu.ma) events by city, keyword, category, or URL. Export to CSV, JSON, or Excel. Each row includes timezone, venue, organizer, and ticket prices when the platform publishes them.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://apify.com/hiringdata/eventbrite-luma-events-scraper">Run it on Apify Store</a>
+        <a class="btn btn-secondary" href="https://github.com/iankuper17/eventbrite-luma-events-scraper-tutorial#run-it-from-the-api">View API tutorial</a>
+      </div>
+      <div class="chips" aria-label="Supported platforms">
+        <span class="chip">Eventbrite</span>
+        <span class="chip">Luma (lu.ma)</span>
+        <span class="chip">CSV export</span>
+        <span class="chip">Apify API</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>What you get</h2>
+      <div class="grid">
+        <article>
+          <h3>Two platforms, one schema</h3>
+          <p>Scrape Eventbrite events and run a Luma event scraper in the same job. Times, venue, organizer, and prices share the same field names.</p>
+        </article>
+        <article>
+          <h3>Search or paste URLs</h3>
+          <p>Use a city and keyword, an Eventbrite category, a Luma category, or paste event, organizer, calendar, and search URLs.</p>
+        </article>
+        <article>
+          <h3>Honest location data</h3>
+          <p>Local and UTC times with an IANA timezone, plus coordinates when the venue is public. Hidden Luma addresses stay <code>null</code>, not an approximate point.</p>
+        </article>
+        <article>
+          <h3>Filters and monitoring</h3>
+          <p>Date range, free-only, keyword filters, and “only new events since the last run.” Skipped and duplicate events are not charged.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="use-cases">
+      <h2>Who it is for</h2>
+      <div class="grid">
+        <article>
+          <h3>Event lead generation</h3>
+          <p>Collect organizer names and public profile URLs for events in your niche, then export Eventbrite events to CSV or JSON for outreach lists.</p>
+        </article>
+        <article>
+          <h3>Tech event monitoring</h3>
+          <p>Watch AI, startup, and developer events in a city on Eventbrite and Luma. Schedule a daily run that returns only newly listed events.</p>
+        </article>
+        <article>
+          <h3>Market research</h3>
+          <p>See how many events, what ticket prices, and which formats appear in a city or category over a date range.</p>
+        </article>
+        <article>
+          <h3>Calendars and city guides</h3>
+          <p>Feed a weekly “what’s on” digest, a map, or an app with structured event data, including coordinates when they are public.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <h2>Pricing</h2>
+      <p class="note">Pay-per-event on Apify. You pay for events saved to your dataset, plus a $0.00005 actor-start fee per run. Duplicates, filtered-out, and already-seen events are not charged.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Apify plan</th>
+            <th>Per event</th>
+            <th>Per 1,000 events</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Free</td>
+            <td class="price">$0.002</td>
+            <td class="price">$2.00</td>
+          </tr>
+          <tr>
+            <td>Bronze</td>
+            <td class="price">$0.0017</td>
+            <td class="price">$1.70</td>
+          </tr>
+          <tr>
+            <td>Silver</td>
+            <td class="price">$0.0014</td>
+            <td class="price">$1.40</td>
+          </tr>
+          <tr>
+            <td>Gold and above</td>
+            <td class="price">$0.0012</td>
+            <td class="price">$1.20</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="fine">Example from the actor documentation: 1,000 events cost $2.00 at the Free-plan event-result price. Cap cost with <code>maxEventsTotal</code>. Eventbrite search stops at about 980 results per search; Luma matches about 87 named cities and otherwise uses a 100 km radius.</p>
+    </section>
+
+    <section id="output">
+      <h2>Sample output</h2>
+      <p class="note">Real Eventbrite event from a live run on 14 November 2026 (dataset <code>jkyztuuMJWdwP05x7</code>). Listing details can change. A matching Luma example and the full field list are in the <a href="https://github.com/iankuper17/eventbrite-luma-events-scraper-tutorial#output-fields">GitHub tutorial</a>.</p>
+      <pre><code>{
+  "platform": "eventbrite",
+  "id": "2004063370489",
+  "url": "https://www.eventbrite.com/e/women-in-ai-tech-digital-innovation-networking-san-francisco-tickets-2004063370489",
+  "title": "Women in AI, Tech &amp; Digital Innovation Networking San Francisco",
+  "startLocal": "2026-11-16T19:00:00-08:00",
+  "endLocal": "2026-11-16T22:00:00-08:00",
+  "timezone": "America/Los_Angeles",
+  "venueName": "Last Drop Tavern",
+  "city": "San Francisco",
+  "isOnline": false,
+  "organizerName": "Business Minds Events",
+  "organizerUrl": "https://www.eventbrite.com/o/business-minds-events-82796727253",
+  "isFree": false,
+  "priceMin": 9.85,
+  "priceMax": 33.85,
+  "currency": "USD"
+}</code></pre>
+    </section>
+
+    <section>
+      <h2>Run it from your code</h2>
+      <p class="note">Python, Node.js, and cURL examples with the real input fields are in the <a href="https://github.com/iankuper17/eventbrite-luma-events-scraper-tutorial#run-it-from-the-api">GitHub tutorial</a>. Keep your Apify API token in an environment variable.</p>
+      <pre><code>from apify_client import ApifyClient
+import os
+
+client = ApifyClient(os.environ["APIFY_TOKEN"])
+run = client.actor("hiringdata/eventbrite-luma-events-scraper").call(run_input={
+    "locations": ["San Francisco", "London"],
+    "keywords": ["AI"],
+    "platforms": ["eventbrite", "luma"],
+    "startDate": "today",
+    "endDate": "+30 days",
+})</code></pre>
+      <div class="cta-row" style="margin-top:1.1rem">
+        <a class="btn btn-primary" href="https://apify.com/hiringdata/eventbrite-luma-events-scraper">Start on Apify Store</a>
+        <a class="btn btn-secondary" href="https://console.apify.com/actors/hiringdata~eventbrite-luma-events-scraper">Open in Apify Console</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      Actor by <a href="https://apify.com/hiringdata">hiringdata</a> on
+      <a href="https://apify.com/hiringdata/eventbrite-luma-events-scraper">Apify Store</a>.
+      Tutorial source is on
+      <a href="https://github.com/iankuper17/eventbrite-luma-events-scraper-tutorial">GitHub</a>.
+    </div>
+    <div>This page documents a published Apify actor. It is not affiliated with Eventbrite or Luma.</div>
+  </footer>
+</body>
+</html>
